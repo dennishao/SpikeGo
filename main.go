@@ -67,14 +67,32 @@ func buyProduct(c *gin.Context) {
 	}
 }
 
+func MiddleWare() gin.HandlerFunc {
+	//全局中间件
+	return func(c *gin.Context) {
+		//设置ip 白名单
+		whiteIp := "::1"
+		clienIp := c.ClientIP()
+
+		if clienIp != whiteIp {
+			c.JSON(http.StatusOK, gin.H{"code": 2000, "message": "非法请求"})
+			return
+		}
+	}
+}
+
 func main() {
 	g := gin.Default()
 
-	g.GET("/products", getProducts)
+	//注册中间件
+	g.Use(MiddleWare())
+	{
+		g.GET("/products", getProducts)
 
-	g.POST("/products", addProduct)
+		g.POST("/products", addProduct)
 
-	g.GET("/kill/:name", buyProduct)
+		g.GET("/kill/:name", buyProduct)
+	}
 
 	err := g.Run()
 
